@@ -283,7 +283,9 @@ a:hover {
   <button class="btn-pdf" onclick="salvarPDFResumido()">Gerar PDF Resumido</button>
   <button class="btn-clear" onclick="limparCampos()">Limpar</button>
   <button class="btn-copy" onclick="copiarParteCima()">Copiar Parte de Cima</button>
-<button class="btn-copy" onclick="copiarParteBaixo()">Copiar Parte de Baixo</button>
+  <button class="btn-copy" onclick="copiarParteBaixo()">Copiar Parte de Baixo</button>
+  <button class="btn-pdf" onclick="salvarPDFComLinks()">Gerar PDF com Links</button>
+
 
 </div>
 
@@ -610,12 +612,86 @@ document.getElementById('logoInput').addEventListener('change', e => {
 });
 
 // PDF (A4)
+
 function salvarPDF() {
-  const elemento = document.getElementById('previewArea');
-  if (!elemento || elemento.innerText.includes("Preencha os campos")) {
+  const preview = document.getElementById('previewArea');
+  if (!preview || preview.innerText.includes("Preencha os campos")) {
     alert("Gere o orçamento primeiro!");
     return;
   }
+
+  // Função auxiliar para normalizar nomes (remove acentos, normaliza hífens, espaços e caixa)
+  function normalizeName(n) {
+    return n
+      .normalize('NFD')                    // separa acentos
+      .replace(/[\u0300-\u036f]/g, '')     // remove acentos
+      .replace(/[–—−]/g, '-')              // normaliza travessões para hífen simples
+      .replace(/\s+/g, ' ')                // normaliza múltiplos espaços
+      .replace(/[^\w\s\-\/()]/g, '')       // remove caracteres estranhos (mantém letras, números, espaços, hífen, barra, parênteses)
+      .trim()
+      .toLowerCase();
+  }
+
+  // Cria o clone da área de pré-visualização para manipular sem alterar a original
+  const clone = preview.cloneNode(true);
+
+  // Injeta estilo no clone para links azuis sem sublinhado (só para o PDF gerado)
+  const style = document.createElement('style');
+  style.innerHTML = `
+    a { color: #1a73e8 !important; text-decoration: none !important; font-weight: 600 !important; }
+    pre { white-space: pre-wrap; word-wrap: break-word; }
+  `;
+  clone.insertBefore(style, clone.firstChild);
+
+  // Procura os nós que representam cada sample no clone
+  // Os seus items são gerados como: <div>• Nome do Sample</div>
+  const allNodes = Array.from(clone.querySelectorAll("*"));
+
+  allNodes.forEach(node => {
+    if (!node.textContent) return;
+    const text = node.textContent.trim();
+
+    // Detecta itens que começam com "•"
+    if (text.startsWith("•")) {
+      // extrai nome do pacote (remove marcador e possíveis " - R$..." que já existam)
+      let nomePacote = text.replace(/^•\s*/, '').trim();
+      nomePacote = nomePacote.split(' - ')[0].split('|')[0].trim();
+
+      // Normaliza pra comparar com samplesData
+      const nomeNorm = normalizeName(nomePacote);
+
+      // Tenta encontrar no array global samplesData com normalização
+      let sampleObj = (typeof samplesData !== "undefined") ? samplesData.find(s => normalizeName(s.nome) === nomeNorm) : null;
+
+      // Se não achar exato, tenta por inclusão parcial (mais tolerante)
+      if (!sampleObj && typeof samplesData !== "undefined") {
+        sampleObj = samplesData.find(s => {
+          const sNorm = normalizeName(s.nome);
+          return sNorm.includes(nomeNorm) || nomeNorm.includes(sNorm);
+        });
+      }
+
+      // Se encontrou valor, atualiza o texto do node adicionando o preço ao lado
+      if (sampleObj && typeof sampleObj.valor === "number") {
+        const valorFormatado = sampleObj.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        node.textContent = `• ${nomePacote} - R$ ${valorFormatado}`;
+      } else {
+        node.textContent = `• ${nomePacote}`;
+      }
+    }
+  });
+
+  // Mantemos a mensagem pronta (#mensagemPronta) se existir; não removemos
+  // Adicionamos um aviso promocional ao final do clone (opcional)
+  const aviso = document.createElement("p");
+  aviso.textContent = "📌 Aproveite agora e garanta já o seu!";
+  aviso.style.textAlign = "center";
+  aviso.style.marginTop = "20px";
+  aviso.style.fontWeight = "600";
+  aviso.style.color = "#0078d7";
+  clone.appendChild(aviso);
+
+  // Configurações do PDF (mesmas que você vinha usando)
   const opt = {
     margin: 10,
     filename: 'Orcamento_LL_Samples.pdf',
@@ -623,8 +699,12 @@ function salvarPDF() {
     html2canvas: { scale: 2, useCORS: true },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
-  html2pdf().set(opt).from(elemento).save();
+
+  // Gera o PDF a partir do clone (com preços adicionados e links destacados)
+  html2pdf().set(opt).from(clone).save();
 }
+
+
 function salvarPDFResumido() {
   const preview = document.getElementById("previewArea");
   if (!preview || preview.innerText.includes("Preencha os campos")) {
@@ -661,9 +741,303 @@ function salvarPDFResumido() {
   html2pdf().set(opt).from(clone).save();
 }
 
+function salvarPDFComLinks() {
+  const preview = document.getElementById("previewArea");
+  if (!preview || preview.innerText.includes("Preencha os campos")) {
+    alert("Gere o orçamento primeiro!");
+    return;
+  }
+
+  // 🎥 Dicionário de vídeos de demonstração
+const videosDemo = {
+  "LL Metais": "https://youtu.be/KuUTx8NzAr4?si=lbaaAjGnjUO9IpJc",
+  "LL Sax v1.5": "https://youtu.be/YotFGV5IQl8?si=4ahVjkVZTQeqbfmK",
+  "LL Piseiro Drums v1": "https://youtu.be/OnQKHjpjvaQ?si=hbo9pwX4DWucZPSb",
+  "LL Bass Piseiro v1": "https://youtu.be/5K1IOqGaP6g?si=PYO9vBxuCGhiZkbR",
+  "LL WS Drums": "https://youtu.be/8onKDOVKCxE?si=HcoB1ZkR_9_UjRS5",
+  "LL Guitarra Piseiro v1": "https://youtu.be/rUvw79orXZg?si=q4JE8l1OrC4MuXQy",
+  "LL Acordeon Piseiro": "https://youtu.be/wzNRhtxSIx0?si=yjudaYtzgVWlj7r6",
+  "LL Percussao Piseiro": "https://youtu.be/I2Tu68topUU?si=IfW2expvkG41K0Po",
+  "LL Bregadeira Drums": "https://youtu.be/IJNOLjdF_8o?si=BN-dy24wlx2L5giT",
+  "LL Guitarra Bregadeira": "https://youtu.be/93LWdjfAIfg?si=oIe6KFojIkQZO8XR",
+  "LL Pé de Serra Drums": "https://youtu.be/LAh_N1dgdRI?si=kq3wqwhPs1NU1GKO",
+  "LL Acordeon Pé-de-Serra": "https://youtu.be/3h8xR4OmtH8?si=HDDBViN52uia_s6e",
+  "LL Piseiro Drums v1.5": "https://youtu.be/6z0aRqURc4w?si=ZAI68b_qdnK2m7LA",
+  "LL Metais v2": "https://youtu.be/RArd9zPafhQ?si=RxUhCsSuN9dj6kwk",
+  "LL Piseiro Drums Summer": "https://youtu.be/iasVX_hPkS4?si=zFEf5FSzaeUu3yoV",
+  "LL Acordeon Piseiro v2": "https://youtu.be/v5kv8za6-90?si=F6QpoqKaEO-KHMO2",
+  "LL Arrocha Drums": "https://youtu.be/1C1FO1tHJyI?si=Sy9HazkMIzN6B5-2",
+  "LL Guitarra Arrocha": "https://youtu.be/TUUs3lmy3Y0?si=XZPMvAvAMJP9_wvs",
+  "LL Bass Arrocha": "https://youtu.be/7RV6pSg8waQ?si=bwoG2HBWWmoz64wL",
+  "LL Arrocha Percussão": "https://youtu.be/sOzFZulOUHQ?si=AFt8hQGvev1l01iS",
+  "LL Cavaco Prime": "https://youtu.be/eIi__vQi14Q?si=-v1QjTikaAzMnNva",
+  "LL Guitarra Distorção": "https://youtu.be/ODTTJ7ZLjco?si=ZQcrh1wl9ZikOA77",
+  "LL Arrasta-Pé Drums v1.5": "https://youtu.be/nke0JEdT8YA?si=pSY3Z1FoEqM6-z8N",
+  "LL Violão Arrocha v1.5": "https://youtu.be/SB7_pE15rbw?si=jISOG-WijwKaN1JT",
+  "LL Guitarra Arrasta-Pé": "https://youtu.be/gCT1ernB7DI?si=2StyUzrHWL86OCtd",
+  "LL Bass Arrasta-Pé": "https://youtu.be/0nPWAixsqhg?si=fob55xx8SAigoZiT",
+  "LL Forró Romântico Drums": "https://youtu.be/9bKunDA2A88?si=FOKFisqdS6SUo8te",
+  "LL Metais v3": "https://youtu.be/S0CqRq9a4TI?si=x_XKZCWPNa0P3__1",
+  "LL Iguinho e Lulinha Drums": "https://youtu.be/Sv2qJHQ0l-o?si=kjFKeJZelf_YbjBy",
+  "LL Violão Vaneira": "https://youtu.be/y50aOUzONBU?si=jzjUAtO2S5pVPZdf",
+  "LL Pagode Drums e Percussion": "https://youtu.be/EHIwzcjL318?si=lI-5AlsOrgdU3BHn",
+  "LL Guitarra Piseiro v3": "https://youtu.be/uJG_RXyoeP4?si=UquVv9MGLk8m6rcZ",
+  "LL Bass Piseiro v2": "https://youtu.be/OcT97fnfB5M?si=L1JG-J7piPKxEdgq",
+  "LL Drums Mari Fernandez": "https://youtu.be/BwIcLysROfM?si=1wk7wUq1fccgpRva",
+  "LL Drums Zé Felipe": "https://youtu.be/d10c7aQLPgM?si=8O2SNR05q4-jhNvA",
+  "LL Drums Felipe Amorim": "https://youtu.be/iLb__-DAIO4?si=L7NsgoxhYTnqSev5",
+  "LL Guitarra Calypso": "https://youtu.be/-dCxO11hSgc?si=lFhQdf2DKN2p91DH",
+  "LL Acordeon Arrocha": "https://youtu.be/mO0MaAN0Uqg?si=LBGc3mUFK-6uR2Bw",
+  "LL Violão Pop v1": "https://youtu.be/nuG8_3bNz8w?si=cOG3BcY11sIK0xEy",
+  "LL Vaneira Drums": "https://youtu.be/0DVtxwdI8t0?si=e86hWI8i5BfqHtUO",
+  "LL Drums Manu Bahtidão": "https://youtu.be/FTg5oa1VHXU?si=ppkYm9OTD7LfU9iN",
+  "LL Violão Pagode e Samba": "https://youtu.be/dl40SSHThfg?si=yIaLKSAEyd5aKKQB",
+  "LL Acordeon Vaneira": "https://youtu.be/NQ6KcXt1OXc?si=gJi4RsHg7QH576bm",
+  "LL Cavaco Prime v2": "https://youtu.be/jN1uVwx0B88?si=LGZxUbdDudA6rrVr",
+  "LL Axé Rythm v2": "https://youtu.be/AUXgiprtqhA?si=XhG7ITJLwblC_7nF",
+  "LL Bass Axé": "https://youtu.be/bO-R5UNPgmY?si=4d5CmBYOEIrPnbBV",
+  "LL Guitarra Axé v2": "https://youtu.be/NU6ewsQQaaY?si=glnHb9jepQEISCvm",
+  "LL Pagodão Rythm v2": "https://youtu.be/h0BoTh6bUBQ?si=PsUqKrSxQ8yqDZ_V",
+  "LL Guitarra Pagodão v2": "https://youtu.be/oMSuwiTPuKw?si=VCkhC7WR0Oa6AsjF",
+  "LL Bass Pagodão": "https://youtu.be/u4ZRQfkwU8Q?si=6oqNIE8XVAoZ5aw7",
+  "LL Guitarra Forrozão": "https://youtu.be/czN2vM06eqM?si=1FzGrgYj5dMwz_U5",
+  "LL Bass Forrozão": "https://youtu.be/IEPn3MSkjJI?si=saLm4IQzeljGZNlb",
+  "LL Bass Pagode": "https://youtu.be/Egn7F4w9ziQ?si=7PYeXL3GtEIbx5TR",
+  "LL Violão Pop v2": "https://youtu.be/jWlLr_bRMCM?si=agB7sYHkC7IdF7ml",
+  "LL Acordeon Arrasta-Pé": "https://youtu.be/0gKTeQ0OJj0?si=kw9slO03p-DBL5K8",
+  "LL Strings": "https://youtu.be/V5zqi4J0sWc?si=tJZFNLJ8IAknCE23",
+  "LL Violão Pop 6/8": "https://youtu.be/IZwjw__8pUw?si=MlB63xE8R900ERMw",
+  "LL Forrozão Drums": "https://youtu.be/R-EOTJoi5bI?si=UcRkdrEWjk9iE4dU",
+  "LL Forró Romântico Drums v2": "https://youtu.be/yl484BqOu9w?si=SDv5syQUQKEBnYcW",
+  "LL Arrocha Drums v2": "https://youtu.be/ev5jrDTqB2Q?si=E0ZmxbFXY-0Eh2wT",
+  "LL Arraiá Drums": "https://youtu.be/ij0IMy274_A?si=BFDgociu8m9dFmon",
+  "LL Ukulele Prime": "https://youtu.be/Nz4ld0Bgd2k?si=SOfwzRx1ah7byiSl",
+  "LL Calypso Drums": "https://youtu.be/DyMQWGG-eww?si=akWcilP1UY6ZKvfx",
+  "LL Lambada Drums": "https://youtu.be/hSMQr-Jb978?si=RFGTX_6zH325DTPA",
+  "LL Drums Henry Freitas": "https://youtu.be/xTR6MuZM1lU?si=aZmLhWs7_Q3xeB9v",
+  "LL Drums Natanzinho Lima": "https://youtu.be/Knm8FoJ-z8M?si=E0wif0lIRbAt7IGN",
+  "LL Guitarra Arrocha Seresta v2": "https://youtu.be/uZHO0a083Oo?si=jHw5I-r7somFev9x",
+  "LL Bass Arrocha Seresta v2": "https://youtu.be/YnpQGQoL0i4?si=801jOc0ykr9aNH5c",
+  "LL Drums Arrocha Safadão": "https://youtu.be/pA9_SCV2bPs?si=WIXq-aKjMMPu2-KL",
+  "LL Baião Drums": "https://youtu.be/q3uNB_Fts_M?si=mSP9s7Uobw-49iDY",
+  "LL Drums Nattan Forró": "https://youtu.be/O0bMyQ9-reo?si=MFPWuXzaiekS-Ff6",
+  "LL Drums Desejo": "https://youtu.be/edbpb1HAJpM?si=J007U-ehQcdUPUYB",
+  "LL Drums Seresta do Rasta": "https://youtu.be/Jl7dWRJVg5k?si=L8gWlKQ5LQzFmAz7",
+  "LL Drums Leo Foguete": "https://youtu.be/Jl7dWRJVg5k?si=L8gWlKQ5LQzFmAz7",
+  "LL Drums Marcynho Batidao": "https://www.youtube.com/watch?v=oIeRu7Le_iI",
+  "LL Guitarra Pagodao v3": "https://www.youtube.com/watch?v=JmGsTXqFDU8",
+  "LL Bass Pagodao v2": "https://www.youtube.com/watch?v=DrEmHweA0aU",
+  "LL Keys Pagodao": "https://www.youtube.com/watch?v=8TE-0kQYAgE",
+  "LL Pacote Produção Nattan": "https://www.youtube.com/watch?v=-u2iGSJMYc8",
+  "LL Drums Guilherme Silva": "https://www.youtube.com/watch?v=egMYYporhgs",
+  "LL Drums Arrasta-Pé v2": "https://www.youtube.com/watch?v=B-VnCfYLIj8",
+  "LL Pacote Producao Arrasta-Pe (Completo)": "https://www.youtube.com/watch?v=B-VnCfYLIj8",
+  "LL Pacote Producao Arrasta-Pe (Acomp)": "https://www.youtube.com/watch?v=B-VnCfYLIj8",
+  "LL Drums Forrozin Os Feras": "https://www.youtube.com/watch?v=3ElrjIbD60U",
+  "LL Drums Flavio Pizada Quente": "https://www.youtube.com/watch?v=8iLazzVOBiA",
+  "LL Drums Thales Play": "https://www.youtube.com/watch?v=14pxiab-sYQ&pp=0gcJCQMKAYcqIYzv",
+  "LL Violao Pop v3": "https://www.youtube.com/watch?v=k5tclbUGABc",
+  "LL Drums Safadao Vaquejada": "https://www.youtube.com/watch?v=D-JNlJU4VDQ",
+  "LL Drums Pablo": "https://www.youtube.com/watch?v=lb9FINdRGf4&t=8s",
+  "LL Drums Claudio Ney e Juliana": "https://www.youtube.com/watch?v=J46vaIavi38",
+  "LL Pacote Produção Claudio Ney e Juliana": "https://www.youtube.com/watch?v=J46vaIavi38",
+  "LL Piano Romântico": "https://www.youtube.com/watch?v=JgX_3tA4pGw&t=5s",
+  "LL Drums Rey Vaqueiro": "https://www.youtube.com/watch?v=geBo5YDSsH4",
+  "LL Drums Forró Boys": "https://www.youtube.com/watch?v=zjt75FJMJmM",
+  "LL Drums Luxúria": "https://www.youtube.com/watch?v=n8eJ6Q1Nq9A",
+  "LL Pacote Produção Arrocha": "https://www.youtube.com/watch?v=YIuHRLtGSjU",
+  "LL Pacote Produção Guilherme Silva": "https://www.youtube.com/watch?v=GF9Vlq8qOys",
+  "LL Guitarra Forró": "https://www.youtube.com/watch?v=76wm2WOucCs"
+};
+
+
+
+
+  // Clona a área de prévia
+  const clone = preview.cloneNode(true);
+
+  // Remove mensagem longa do final, se existir
+  const msgNode = clone.querySelector("#mensagemPronta");
+  if (msgNode) msgNode.remove();
+
+  // Varre todos os elementos do clone
+  const allNodes = Array.from(clone.querySelectorAll("*"));
+
+  allNodes.forEach(node => {
+    if (!node.textContent) return;
+    const text = node.textContent.trim();
+
+    // Detecta itens de sample (que começam com "•")
+    if (text.startsWith("•")) {
+      // Extrai o nome do pacote
+      let nomePacote = text.replace(/^•\s*/, '').trim();
+      nomePacote = nomePacote.split(' - ')[0].split('|')[0].trim();
+
+      // Procura o objeto no array global samplesData
+      let sampleObj = (typeof samplesData !== "undefined") ? samplesData.find(s => s.nome.trim() === nomePacote) : null;
+
+      // Se não achar, tenta match parcial
+      if (!sampleObj && typeof samplesData !== "undefined") {
+        sampleObj = samplesData.find(s => nomePacote.includes(s.nome.trim()) || s.nome.trim().includes(nomePacote));
+      }
+
+      // Adiciona o valor ao lado do nome
+      if (sampleObj && typeof sampleObj.valor === "number") {
+        const valorFormatado = sampleObj.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        node.textContent = `• ${nomePacote} - R$ ${valorFormatado}`;
+      } else {
+        node.textContent = `• ${nomePacote}`;
+      }
+
+      // Adiciona link de vídeo destacado (se existir)
+      if (videosDemo[nomePacote]) {
+        const p = document.createElement("p");
+        p.innerHTML = `🎥 Vídeo de demonstração: <a href="${videosDemo[nomePacote]}" target="_blank" style="
+          color: #0078d7;
+          text-decoration: none;
+          font-weight: 600;
+        ">${videosDemo[nomePacote]}</a>`;
+        p.style.margin = "4px 0 10px";
+        p.style.fontSize = "0.9em";
+        p.style.color = "#222";
+        node.parentNode.insertBefore(p, node.nextSibling);
+      }
+    }
+  });
+
+  // Mensagem promocional no final
+  const aviso = document.createElement("p");
+  aviso.textContent = "📌 Aproveite agora e garanta já o seu!";
+  aviso.style.textAlign = "center";
+  aviso.style.marginTop = "20px";
+  aviso.style.fontWeight = "600";
+  aviso.style.color = "#0078d7";
+  clone.appendChild(aviso);
+
+  // Configuração do PDF
+  const opt = {
+    margin: 10,
+    filename: 'Orcamento_LL_Samples_com_Videos.pdf',
+    image: { type: 'jpeg', quality: 1 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  // Gera o PDF com preços e links destacados
+  html2pdf().set(opt).from(clone).save();
+}
+
+
+
+
 function copiarParteCima() {
   const preview = document.getElementById("previewArea");
   if (!preview) return alert("Gere o orçamento primeiro!");
+
+  // Dicionário de vídeos de demonstração (adicione novos itens aqui)
+const videosDemo = {
+  "LL Metais": "https://youtu.be/KuUTx8NzAr4?si=lbaaAjGnjUO9IpJc",
+  "LL Sax v1.5": "https://youtu.be/YotFGV5IQl8?si=4ahVjkVZTQeqbfmK",
+  "LL Piseiro Drums v1": "https://youtu.be/OnQKHjpjvaQ?si=hbo9pwX4DWucZPSb",
+  "LL Bass Piseiro v1": "https://youtu.be/5K1IOqGaP6g?si=PYO9vBxuCGhiZkbR",
+  "LL WS Drums": "https://youtu.be/8onKDOVKCxE?si=HcoB1ZkR_9_UjRS5",
+  "LL Guitarra Piseiro v1": "https://youtu.be/rUvw79orXZg?si=q4JE8l1OrC4MuXQy",
+  "LL Acordeon Piseiro": "https://youtu.be/wzNRhtxSIx0?si=yjudaYtzgVWlj7r6",
+  "LL Percussao Piseiro": "https://youtu.be/I2Tu68topUU?si=IfW2expvkG41K0Po",
+  "LL Bregadeira Drums": "https://youtu.be/IJNOLjdF_8o?si=BN-dy24wlx2L5giT",
+  "LL Guitarra Bregadeira": "https://youtu.be/93LWdjfAIfg?si=oIe6KFojIkQZO8XR",
+  "LL Pé de Serra Drums": "https://youtu.be/LAh_N1dgdRI?si=kq3wqwhPs1NU1GKO",
+  "LL Acordeon Pé-de-Serra": "https://youtu.be/3h8xR4OmtH8?si=HDDBViN52uia_s6e",
+  "LL Piseiro Drums v1.5": "https://youtu.be/6z0aRqURc4w?si=ZAI68b_qdnK2m7LA",
+  "LL Metais v2": "https://youtu.be/RArd9zPafhQ?si=RxUhCsSuN9dj6kwk",
+  "LL Piseiro Drums Summer": "https://youtu.be/iasVX_hPkS4?si=zFEf5FSzaeUu3yoV",
+  "LL Acordeon Piseiro v2": "https://youtu.be/v5kv8za6-90?si=F6QpoqKaEO-KHMO2",
+  "LL Arrocha Drums": "https://youtu.be/1C1FO1tHJyI?si=Sy9HazkMIzN6B5-2",
+  "LL Guitarra Arrocha": "https://youtu.be/TUUs3lmy3Y0?si=XZPMvAvAMJP9_wvs",
+  "LL Bass Arrocha": "https://youtu.be/7RV6pSg8waQ?si=bwoG2HBWWmoz64wL",
+  "LL Arrocha Percussão": "https://youtu.be/sOzFZulOUHQ?si=AFt8hQGvev1l01iS",
+  "LL Cavaco Prime": "https://youtu.be/eIi__vQi14Q?si=-v1QjTikaAzMnNva",
+  "LL Guitarra Distorção": "https://youtu.be/ODTTJ7ZLjco?si=ZQcrh1wl9ZikOA77",
+  "LL Arrasta-Pé Drums v1.5": "https://youtu.be/nke0JEdT8YA?si=pSY3Z1FoEqM6-z8N",
+  "LL Violão Arrocha v1.5": "https://youtu.be/SB7_pE15rbw?si=jISOG-WijwKaN1JT",
+  "LL Guitarra Arrasta-Pé": "https://youtu.be/gCT1ernB7DI?si=2StyUzrHWL86OCtd",
+  "LL Bass Arrasta-Pé": "https://youtu.be/0nPWAixsqhg?si=fob55xx8SAigoZiT",
+  "LL Forró Romântico Drums": "https://youtu.be/9bKunDA2A88?si=FOKFisqdS6SUo8te",
+  "LL Metais v3": "https://youtu.be/S0CqRq9a4TI?si=x_XKZCWPNa0P3__1",
+  "LL Iguinho e Lulinha Drums": "https://youtu.be/Sv2qJHQ0l-o?si=kjFKeJZelf_YbjBy",
+  "LL Violão Vaneira": "https://youtu.be/y50aOUzONBU?si=jzjUAtO2S5pVPZdf",
+  "LL Pagode Drums e Percussion": "https://youtu.be/EHIwzcjL318?si=lI-5AlsOrgdU3BHn",
+  "LL Guitarra Piseiro v3": "https://youtu.be/uJG_RXyoeP4?si=UquVv9MGLk8m6rcZ",
+  "LL Bass Piseiro v2": "https://youtu.be/OcT97fnfB5M?si=L1JG-J7piPKxEdgq",
+  "LL Drums Mari Fernandez": "https://youtu.be/BwIcLysROfM?si=1wk7wUq1fccgpRva",
+  "LL Drums Zé Felipe": "https://youtu.be/d10c7aQLPgM?si=8O2SNR05q4-jhNvA",
+  "LL Drums Felipe Amorim": "https://youtu.be/iLb__-DAIO4?si=L7NsgoxhYTnqSev5",
+  "LL Guitarra Calypso": "https://youtu.be/-dCxO11hSgc?si=lFhQdf2DKN2p91DH",
+  "LL Acordeon Arrocha": "https://youtu.be/mO0MaAN0Uqg?si=LBGc3mUFK-6uR2Bw",
+  "LL Violão Pop v1": "https://youtu.be/nuG8_3bNz8w?si=cOG3BcY11sIK0xEy",
+  "LL Vaneira Drums": "https://youtu.be/0DVtxwdI8t0?si=e86hWI8i5BfqHtUO",
+  "LL Drums Manu Bahtidão": "https://youtu.be/FTg5oa1VHXU?si=ppkYm9OTD7LfU9iN",
+  "LL Violão Pagode e Samba": "https://youtu.be/dl40SSHThfg?si=yIaLKSAEyd5aKKQB",
+  "LL Acordeon Vaneira": "https://youtu.be/NQ6KcXt1OXc?si=gJi4RsHg7QH576bm",
+  "LL Cavaco Prime v2": "https://youtu.be/jN1uVwx0B88?si=LGZxUbdDudA6rrVr",
+  "LL Axé Rythm v2": "https://youtu.be/AUXgiprtqhA?si=XhG7ITJLwblC_7nF",
+  "LL Bass Axé": "https://youtu.be/bO-R5UNPgmY?si=4d5CmBYOEIrPnbBV",
+  "LL Guitarra Axé v2": "https://youtu.be/NU6ewsQQaaY?si=glnHb9jepQEISCvm",
+  "LL Pagodão Rythm v2": "https://youtu.be/h0BoTh6bUBQ?si=PsUqKrSxQ8yqDZ_V",
+  "LL Guitarra Pagodão v2": "https://youtu.be/oMSuwiTPuKw?si=VCkhC7WR0Oa6AsjF",
+  "LL Bass Pagodão": "https://youtu.be/u4ZRQfkwU8Q?si=6oqNIE8XVAoZ5aw7",
+  "LL Guitarra Forrozão": "https://youtu.be/czN2vM06eqM?si=1FzGrgYj5dMwz_U5",
+  "LL Bass Forrozão": "https://youtu.be/IEPn3MSkjJI?si=saLm4IQzeljGZNlb",
+  "LL Bass Pagode": "https://youtu.be/Egn7F4w9ziQ?si=7PYeXL3GtEIbx5TR",
+  "LL Violão Pop v2": "https://youtu.be/jWlLr_bRMCM?si=agB7sYHkC7IdF7ml",
+  "LL Acordeon Arrasta-Pé": "https://youtu.be/0gKTeQ0OJj0?si=kw9slO03p-DBL5K8",
+  "LL Strings": "https://youtu.be/V5zqi4J0sWc?si=tJZFNLJ8IAknCE23",
+  "LL Violão Pop 6/8": "https://youtu.be/IZwjw__8pUw?si=MlB63xE8R900ERMw",
+  "LL Forrozão Drums": "https://youtu.be/R-EOTJoi5bI?si=UcRkdrEWjk9iE4dU",
+  "LL Forró Romântico Drums v2": "https://youtu.be/yl484BqOu9w?si=SDv5syQUQKEBnYcW",
+  "LL Arrocha Drums v2": "https://youtu.be/ev5jrDTqB2Q?si=E0ZmxbFXY-0Eh2wT",
+  "LL Arraiá Drums": "https://youtu.be/ij0IMy274_A?si=BFDgociu8m9dFmon",
+  "LL Ukulele Prime": "https://youtu.be/Nz4ld0Bgd2k?si=SOfwzRx1ah7byiSl",
+  "LL Calypso Drums": "https://youtu.be/DyMQWGG-eww?si=akWcilP1UY6ZKvfx",
+  "LL Lambada Drums": "https://youtu.be/hSMQr-Jb978?si=RFGTX_6zH325DTPA",
+  "LL Drums Henry Freitas": "https://youtu.be/xTR6MuZM1lU?si=aZmLhWs7_Q3xeB9v",
+  "LL Drums Natanzinho Lima": "https://youtu.be/Knm8FoJ-z8M?si=E0wif0lIRbAt7IGN",
+  "LL Guitarra Arrocha Seresta v2": "https://youtu.be/uZHO0a083Oo?si=jHw5I-r7somFev9x",
+  "LL Bass Arrocha Seresta v2": "https://youtu.be/YnpQGQoL0i4?si=801jOc0ykr9aNH5c",
+  "LL Drums Arrocha Safadão": "https://youtu.be/pA9_SCV2bPs?si=WIXq-aKjMMPu2-KL",
+  "LL Baião Drums": "https://youtu.be/q3uNB_Fts_M?si=mSP9s7Uobw-49iDY",
+  "LL Drums Nattan Forró": "https://youtu.be/O0bMyQ9-reo?si=MFPWuXzaiekS-Ff6",
+  "LL Drums Desejo": "https://youtu.be/edbpb1HAJpM?si=J007U-ehQcdUPUYB",
+  "LL Drums Seresta do Rasta": "https://youtu.be/Jl7dWRJVg5k?si=L8gWlKQ5LQzFmAz7",
+  "LL Drums Leo Foguete": "https://youtu.be/Jl7dWRJVg5k?si=L8gWlKQ5LQzFmAz7",
+  "LL Drums Marcynho Batidao": "https://www.youtube.com/watch?v=oIeRu7Le_iI",
+  "LL Guitarra Pagodao v3": "https://www.youtube.com/watch?v=JmGsTXqFDU8",
+  "LL Bass Pagodao v2": "https://www.youtube.com/watch?v=DrEmHweA0aU",
+  "LL Keys Pagodao": "https://www.youtube.com/watch?v=8TE-0kQYAgE",
+  "LL Pacote Produção Nattan": "https://www.youtube.com/watch?v=-u2iGSJMYc8",
+  "LL Drums Guilherme Silva": "https://www.youtube.com/watch?v=egMYYporhgs",
+  "LL Drums Arrasta-Pé v2": "https://www.youtube.com/watch?v=B-VnCfYLIj8",
+  "LL Pacote Producao Arrasta-Pe (Completo)": "https://www.youtube.com/watch?v=B-VnCfYLIj8",
+  "LL Pacote Producao Arrasta-Pe (Acomp)": "https://www.youtube.com/watch?v=B-VnCfYLIj8",
+  "LL Drums Forrozin Os Feras": "https://www.youtube.com/watch?v=3ElrjIbD60U",
+  "LL Drums Flavio Pizada Quente": "https://www.youtube.com/watch?v=8iLazzVOBiA",
+  "LL Drums Thales Play": "https://www.youtube.com/watch?v=14pxiab-sYQ&pp=0gcJCQMKAYcqIYzv",
+  "LL Violao Pop v3": "https://www.youtube.com/watch?v=k5tclbUGABc",
+  "LL Drums Safadao Vaquejada": "https://www.youtube.com/watch?v=D-JNlJU4VDQ",
+  "LL Drums Pablo": "https://www.youtube.com/watch?v=lb9FINdRGf4&t=8s",
+  "LL Drums Claudio Ney e Juliana": "https://www.youtube.com/watch?v=J46vaIavi38",
+  "LL Pacote Produção Claudio Ney e Juliana": "https://www.youtube.com/watch?v=J46vaIavi38",
+  "LL Piano Romântico": "https://www.youtube.com/watch?v=JgX_3tA4pGw&t=5s",
+  "LL Drums Rey Vaqueiro": "https://www.youtube.com/watch?v=geBo5YDSsH4",
+  "LL Drums Forró Boys": "https://www.youtube.com/watch?v=zjt75FJMJmM",
+  "LL Drums Luxúria": "https://www.youtube.com/watch?v=n8eJ6Q1Nq9A",
+  "LL Pacote Produção Arrocha": "https://www.youtube.com/watch?v=YIuHRLtGSjU",
+  "LL Pacote Produção Guilherme Silva": "https://www.youtube.com/watch?v=GF9Vlq8qOys",
+  "LL Guitarra Forró": "https://www.youtube.com/watch?v=76wm2WOucCs"
+};
+
+
+
 
   // Clona a prévia atual
   const clone = preview.cloneNode(true);
@@ -675,14 +1049,14 @@ function copiarParteCima() {
   // Pega o texto bruto
   let texto = clone.innerText;
 
-  // 🔹 Limpa e normaliza
+  // 🔹 Limpa e normaliza (sua lógica original)
   texto = texto
     .replace(/\r/g, '')                 
     .replace(/[ \t]+/g, ' ')            
     .replace(/\n\s*\n\s*\n+/g, '\n\n')  
     .trim();
 
-  // 🔹 Formata seções principais
+  // 🔹 Formata seções principais (sua lógica original)
   texto = texto
     .replace(/^🎹 LL SAMPLES 🎹\s*/m, '🎹 LL SAMPLES 🎹\n\n')
     .replace(/🌟 ORÇAMENTO ESPECIAL/g, ' 🌟 ORÇAMENTO ESPECIAL')
@@ -691,20 +1065,47 @@ function copiarParteCima() {
     .replace(/•\s*/g, '\n• ') // força cada item pra linha nova
     .replace(/\n{3,}/g, '\n\n');
 
-  // 🔹 Linha em branco antes do valor bruto
-  texto = texto.replace(/(• [^\n]+)\n( 💰 Valor Bruto)/, '$1\n\n$2');
+  // Agora: vamos inserir as linhas de vídeo **apenas** na parte de cima.
+  // Quebra em linhas e, para cada linha que represente um sample (começa com "• "),
+  // tentamos extrair o nome do pacote e, se houver vídeo, inserir a linha do vídeo em seguida.
+  const linhas = texto.split('\n');
+  const linhasComVideo = [];
+  for (let i = 0; i < linhas.length; i++) {
+    const linha = linhas[i];
+    linhasComVideo.push(linha);
+
+    // detecta itens de sample que normalmente começam com "• "
+    if (/^\s*•\s*/.test(linha)) {
+      // extrai o nome do pacote:
+      // remove o marcador "•", depois remove possíveis sufixos " - R$..." ou " | ...".
+      let nomePacote = linha.replace(/^\s*•\s*/, '').trim();
+      // remove parte após " - " ou " | " se existir
+      nomePacote = nomePacote.split(' - ')[0].split('|')[0].trim();
+
+      if (videosDemo[nomePacote]) {
+        linhasComVideo.push(`🎥 Vídeo de demonstração: ${videosDemo[nomePacote]}`);
+        // adiciona uma linha vazia para separar visualmente
+        linhasComVideo.push('');
+      }
+    }
+  }
+
+  let textoFinal = linhasComVideo.join('\n');
+
+  // 🔹 Linha em branco antes do valor bruto (mantém sua transformação original)
+  textoFinal = textoFinal.replace(/(• [^\n]+)\n( 💰 Valor Bruto)/, '$1\n\n$2');
 
   // 🔹 Coloca o PIX em itálico (com asteriscos)
-  texto = texto.replace(/(💵 Total Final \(PIX\): [^\n]+)/, '*$1*');
+  textoFinal = textoFinal.replace(/(💵 Total Final \(PIX\): [^\n]+)/, '*$1*');
 
-  // 🔹 Conversão para compatibilidade WhatsApp
-  texto = texto
+  // 🔹 Conversão para compatibilidade WhatsApp (mantém sua lógica)
+  textoFinal = textoFinal
     .replace(/\n\n/g, '\n\u200B\n') // adiciona espaço invisível entre blocos
     .replace(/\n{3,}/g, '\n\u200B\n') // evita colagem sem espaçamento
     .trim();
 
-  navigator.clipboard.writeText(texto)
-    .then(() => alert("Parte de cima copiada com formatação WhatsApp!"))
+  navigator.clipboard.writeText(textoFinal)
+    .then(() => alert("Parte de cima copiada com formatação WhatsApp e links de demonstração!"))
     .catch(() => alert("Erro ao copiar."));
 }
 
