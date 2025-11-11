@@ -529,8 +529,8 @@ const descontoHTML = descontoTexto
     ${contato?`<p><strong>📲Contato:</strong> ${contato}</p>`:""}
 	<b>\n🗒️SAMPLES SELECIONADOS:\n\n</b>
     ${listaHTML}
-  <p class="total">💰 Valor Bruto: R$${total.toFixed(2)}</p>
-  ${descontoHTML}
+ ${(perc > 0 || val > 0) ? `<p class="total">💰 Valor Bruto: R$${total.toFixed(2)}</p>` : ""}
+${descontoHTML}
   <p class="valor-final" style="color:#0078d7;">💳 Total Final (Cartão c/ acréscimo): <strong>R$${(final * 1.06).toFixed(2)}</strong></p>
   <p class="valor-final">💵 Total Final (PIX): <strong>R$${final.toFixed(2)}</strong></p>
 
@@ -720,6 +720,7 @@ function copiarParteBaixo() {
     .then(() => alert("Parte de baixo copiada!"))
     .catch(() => alert("Erro ao copiar."));
 }
+
 
 
 </script>
