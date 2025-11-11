@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>LL Samples Links</title>
+
+<!-- Biblioteca html2pdf -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  margin: 0;
+  background: #f9f9f9;
+  color: #333;
+}
+.container {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+}
+.form-panel {
+  width: 35%;
+  background: #fff;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+  padding: 25px;
+  overflow-y: auto;
+}
+.preview-panel {
+  flex: 1;
+  padding: 25px;
+  overflow-y: auto;
+}
+h2 { margin-top: 0; color: #111; }
+label { font-weight: 600; margin-top: 15px; display: block; }
+input, textarea {
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px;
+  margin-top: 5px;
+}
+.desconto-group {
+  display: flex;
+  gap: 10px;
+}
+.desconto-group input { flex: 1; }
+
+.sample-list {
+  max-height: 270px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #fafafa;
+}
+
+/* Cada item: checkbox + nome alinhados à esquerda */
+.sample-item {
+  display: block;            /* remove o flex */
+  margin-bottom: 6px;
+  text-align: left;
+}
+
+/* Checkbox e texto ficam lado a lado, alinhados à esquerda */
+.sample-item input[type="checkbox"] {
+  position: relative;
+  top: 38px;                  /* 🔹 ajusta a posição vertical em 2px */
+  margin-left: 10px
+  margin-right: 8px;
+  left: 50px;
+  transform: scale(1.2);
+  accent-color: #0078d7;
+  cursor: pointer;
+}
+
+/* Label normal, sem forçar alinhamento */
+.sample-item label {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+
+button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+  margin-top: 15px;
+  margin-right: 8px;
+}
+button:hover { opacity: 0.9; }
+.btn-generate { background: #0078d7; }
+.btn-copy { background: #28a745; }
+.btn-pdf { background: #6c757d; }
+.btn-clear { background: #dc3545; }
+.btn-select { background: #ff9800; color: #fff; }
+
+.preview-panel h2 {
+  color: #0078d7;
+  border-bottom: 2px solid #0078d7;
+  padding-bottom: 5px;
+}
+#previewArea {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+.total { font-weight: 700; font-size: 1.1em; margin-top: 10px; }
+.valor-final {
+  color: #28a745;
+  font-weight: 700;
+  font-size: 1.2em;
+  margin-top: 4px;
+}
+.desconto-texto {
+  color: #d9534f;
+  font-weight: 600;
+  margin-top: 5px;
+}
+@media print {
+  body * { visibility: hidden; }
+  #previewArea, #previewArea * { visibility: visible; }
+  #previewArea { position: absolute; left: 0; top: 0; width: 100%; }
+}
+.logo-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+.btn-logo {
+  background: #0078d7;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.9em;
+}
+.logo-preview {
+  height: 45px;
+  width: auto;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  display: none;
+}
+.no-results {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+}
+<style>
+/* Fonte global idêntica à usada na parte superior */
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 16px;
+  color: #222;
+  line-height: 1.5;
+}
+
+/* Garante que a pré-visualização e a mensagem final usem a mesma fonte */
+pre, code, .msg-preview {
+  font-family: 'Segoe UI', Arial, sans-serif !important;
+  font-size: 16px;
+  white-space: pre-wrap; /* Permite quebra de linha natural */
+  word-wrap: break-word;
+  background: none;
+  border: none;
+  color: #222;
+}
+
+/* Links clicáveis e bonitos */
+a {
+  color: #1a73e8;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+/* 📱 Layout responsivo para mobile */
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+  }
+
+  .container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .form-panel {
+    width: 100%;
+    box-shadow: none;
+    border-bottom: 2px solid #0078d7;
+    padding: 20px;
+  }
+
+  .preview-panel {
+    width: 100%;
+    padding: 15px;
+  }
+
+  h2 {
+    font-size: 1.2em;
+  }
+
+  input, textarea, button {
+    font-size: 1em;
+  }
+
+  button {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .sample-list {
+    max-height: 200px;
+  }
+
+  .logo-box {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .logo-preview {
+    height: 40px;
+  }
+}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="form-panel">
+    <div class="logo-box">
+      <!-- <input type="file" id="logoInput" accept="image/png,image/jpeg" hidden> -->
+     <!-- Remova ou comente -->
+<!-- <button type="button" onclick="document.getElementById('logoInput').click()" class="btn-logo">Importar Logo (PNG)</button> -->
+
+      <img id="logoPreview" 
+     src="https://raw.githubusercontent.com/ciliocavalcante-design/imagesll/2f3f0447d9d7afa76f017257d899151e0b7468bb/Layer%205.png" 
+     alt="Logo LL Samples" 
+     class="logo-preview" 
+     style="display:block;">
+    </div>
+
+    <h2>⚡ LL Samples Links</h2>
+    <label>Cliente</label>
+    <input type="text" id="cliente" placeholder="Nome do cliente"/>
+    <label>Contato (WhatsApp / E-mail)</label>
+    <input type="text" id="contato" placeholder="(xx) xxxxx-xxxx / email"/>
+    <div class="desconto-group">
+      <div>
+        <label>Desconto (%)</label>
+        <input type="number" id="descontoPerc" placeholder="0" min="0" max="100"/>
+      </div>
+      <div>
+        <label>Desconto (R$)</label>
+        <input type="number" id="descontoVal" placeholder="0" min="0"/>
+      </div>
+    </div>
+
+    <label>Buscar Samples</label>
+    <input type="text" id="sampleSearch" placeholder="Filtrar por nome..."/>
+    <button class="btn-select" id="toggleSelect">Selecionar Todos</button>
+    <div id="samplesContainer" class="sample-list"></div>
+
+    <label>Mensagem adicional</label>
+    <textarea id="mensagem" rows="4" placeholder="Ex: Obrigado pela compra!"></textarea>
+
+    <div>
+  <button class="btn-generate" onclick="gerarMensagem()">Gerar</button>
+  <button class="btn-copy" onclick="copiarMensagem()">Copiar</button>
+  <button class="btn-pdf" onclick="salvarPDF()">Salvar PDF (A4)</button>
+  <button class="btn-pdf" onclick="salvarPDFResumido()">Gerar PDF Resumido</button>
+  <button class="btn-clear" onclick="limparCampos()">Limpar</button>
+  <button class="btn-copy" onclick="copiarParteCima()">Copiar Parte de Cima</button>
+<button class="btn-copy" onclick="copiarParteBaixo()">Copiar Parte de Baixo</button>
+
+</div>
+
+  </div>
+
+  <div class="preview-panel">
+    <h2>📜 Pré-visualização</h2>
+    <div id="previewArea">
+      <p><i>Preencha os campos e clique em "Gerar" para ver o resultado.</i></p>
+    </div>
+  </div>
+</div>
+
+<script>
+const rawData = `LL Sax v1.5|https://we.tl/t-o2dsHa2y7j|60
+LL Metais|https://we.tl/t-K8mFDCeNtj|60
+LL Piseiro Drums v1|https://we.tl/t-ey1c3nhK3P|60
+LL WS Drums|https://we.tl/t-1AcuGoU6aV|60
+LL Acordeon Piseiro|https://we.tl/t-ifxFvZRXfD|60
+LL Guitarra Piseiro|https://we.tl/t-kh42BhY7mY|60
+LL Piseiro Bass|https://we.tl/t-jHxJby32BK|60
+LL Percussao Piseiro|https://we.tl/t-AkdH5n4urs|60
+LL Bregadeira Drums|https://we.tl/t-XO4bpzkUc3|60
+LL Guitarra Bregadeira|https://we.tl/t-IIpAMRqb43|60
+LL Acordeon Pé-de-Serra|https://we.tl/t-PJPD52SvAP|60
+LL Pe de Serra Drums e Perc|https://we.tl/t-tdhd8ywv43|60
+LL Piseiro Drums 1.5|https://we.tl/t-FDr6vE3wTu|80
+LL Piseiro Drums 2.0|https://we.tl/t-hTxGff7AWF|80
+LL Axé Percussão|https://we.tl/t-GzpWciGqxv|60
+LL Guitarra Axé|https://we.tl/t-tkBHwma7i9|60
+LL Axé Drums|https://we.tl/t-vKJhRMQZdW|60
+LL Pagodao Drums e Percussion|https://we.tl/t-osPpMZJvdK|70
+LL Guitarra Pagodão|https://we.tl/t-fP7wwxZyo9|70
+LL Guitarra Piseiro 2.0|https://we.tl/t-Nq7AtFuS9p|70
+LL Piseiro Drums Summer|https://we.tl/t-fbjtoCEFMt|70
+LL Acordeon Piseiro 2.0|https://we.tl/t-oGApkBFIsz|70
+LL Arrocha Drums|https://we.tl/t-11PiNdzx8c|70
+LL Guitarra Arrocha|https://we.tl/t-1QxsdF9O6s|60
+LL Bass Arrocha|https://we.tl/t-YBfLYqJ8V4|60
+LL Violao Arrocha|https://we.tl/t-yrFYMRo4DK|60
+LL Arrasta-Pe Drums|https://we.tl/t-0r7f2BEL3w|60
+LL Cavaco Prime|https://we.tl/t-uQCehAvWeG|60
+LL Arrocha Percussao|https://we.tl/t-nn9VOw6hBs|60
+LL Arrocha Drums Nadson|https://we.tl/t-hoXjx4u3PT|60
+LL Metais 2.0|https://we.tl/t-MKUVnqz8ZY|80
+LL Arrasta-Pe Drums 1.5|https://we.tl/t-pKOf0U5Eh7|60
+LL Guitarra Arrasta-Pe|https://we.tl/t-JrSmmxw6ry|40
+LL Violão Arrocha 1.5 (Re-Edition)|https://we.tl/t-6B3L5R9OGH|60
+LL Forro Romantico Drums|https://we.tl/t-l59oJk3p35|60
+LL Metais v3|https://we.tl/t-L34E3D5HdV|80
+LL Bass Arrasta-Pe|https://we.tl/t-qPeCOnAwUB|40
+LL Iguinho e Lulinha Drums|https://we.tl/t-5V7Rz3OVDz|60
+LL Violão Vaneira|https://we.tl/t-nCV8299ACI|60
+LL Pagode Drums e Percussion|https://we.tl/t-APlWBSIuiX|60
+LL Guitarra Piseiro v3|https://we.tl/t-DSbFhmJmZ7|80
+LL Bass Piseiro v2|https://we.tl/t-39yuZbEsFL|60
+LL Drums Mari Fernandez|https://we.tl/t-4EfvrsG9hy|60
+LL Drums Zé Felipe|https://we.tl/t-maTiBIRkrb|60
+LL Drums Felipe Amorim|https://we.tl/t-Q9Uf1REz6U|60
+LL Guitarra Calypso|https://we.tl/t-O7W7gcsU8C|60
+LL Acordeon Arrocha|https://we.tl/t-2SmOxCNSaQ|60
+LL Violão Pop|https://we.tl/t-rV6qSEqEWm|60
+LL Vaneira Drums|https://llsamples.wetransfer.com/downloads/c31dd871623ddfcca6e607c17e0bd29c20231102143806/2db1dc|60
+LL Drums Manu Bahtidao|https://we.tl/t-Z32LRxNIWK|60
+LL Violao Pagode Samba|https://we.tl/t-EFoy4Nktqa|60
+LL Acordeon Vaneira|https://we.tl/t-6fRj1xqomM|60
+LL Cavaco Prime v2|https://we.tl/t-Jb4VPbunjv|70
+LL Axé Rythm v2|https://we.tl/t-9LJU7Vkrx5|80
+LL Bass Axé|https://we.tl/t-3srGMlsJ1Y|70
+LL Guitarra Axe v2|https://we.tl/t-JCxKmKDmya|60
+LL Pagodao Rythm v2|https://we.tl/t-gmmNbJoTPv|70
+LL Guitarra Pagodão v2|https://we.tl/t-7fdXWwoMab|70
+LL Bass Pagodao|https://we.tl/t-BFP7ZMwIia|70
+LL Guitarra Forrozao|https://we.tl/t-KFwb1njQYH|60
+LL Acordeon Forrozao|https://we.tl/t-SykpVseEtv|60
+LL Bass Forrozao|https://we.tl/t-r8ZoQYEtTx|60
+LL Bass Pagode|https://we.tl/t-kW9SfLwLdx|60
+LL Violao Pop v2|https://we.tl/t-eJQEVhrOwP|80
+LL Acordeon Arrasta-Pe|https://we.tl/t-Aodh8BGNaq|70
+LL Strings|https://we.tl/t-rdRGMZE689|60
+LL Violao Pop 6-8|https://we.tl/t-bc5emlSUfT|80
+LL Forro Vaneirao Drums|https://we.tl/t-TGFP8fvGel|70
+LL Forrozao Drums v1.1|https://we.tl/t-5wNcqaukez|70
+LL Forro Romantico Drums v2|https://we.tl/t-quDpt15hJp|70
+LL Arrocha Drums v2|https://we.tl/t-AW7fM79rdm|70
+LL Arraia Drums|https://we.tl/t-G7KbyQDiRT|60
+LL Ukulele Prime|https://we.tl/t-3CYu4WEm3G|70
+LL Calypso Drums|https://we.tl/t-iO1rDKuKk6|60
+LL Lambada Drums|https://we.tl/t-2K3xKlLPd1|60
+LL Drums Henry Freitas|https://we.tl/t-tEih1L8lWf|60
+LL Drums Natanzinho Lima|https://we.tl/t-FD3k5FsUFm|70
+LL Guitarra Arrocha v2 – Seresta|https://we.tl/t-zTFzOIXQdw|70
+LL Bass Arrocha v2 – Seresta|https://we.tl/t-6imvI338cV|70
+LL Drums Arrocha Safadão|https://we.tl/t-ilRPcNmESs|70
+LL Baião Drums|https://we.tl/t-9yy30zdwQe|60
+LL Drums Nattan Forró|https://we.tl/t-TVQXS9gA1N|70
+LL Drums Desejo|https://we.tl/t-rAX2ZKrD1f|70
+LL Drums Seresta do Rasta|https://we.tl/t-443amgNrgX|70
+LL Drums Leo Foguete|https://we.tl/t-bigeRFrIid|70
+LL Guitarra Batidao Cliente|https://we.tl/t-9rzahb01qQ|70
+LL Bass Forro Romantico|https://drive.google.com/file/d/1898UCZGQxkTmGZpSuzwgXHzma2FIU8Ha/view?usp=sharing|70
+LL Drums Marcynho Batidao|https://we.tl/t-M9MoLqked0|70
+LL Guitarra Pagodao v3|https://we.tl/t-XfPLuZeMKt|80
+LL Bass Pagodao v2|https://we.tl/t-5OD55VV8jV|70
+LL Keys Pagodao|https://we.tl/t-cx1dGwp8VZ|70
+LL Pacote Produção Nattan|https://we.tl/t-KchmIqMh40|70
+LL Drums Guilherme Silva|https://we.tl/t-A1jkYPpdPe|70
+LL Drums Ronny Arrocha 2025|https://we.tl/t-lf2a3LVTiM|70
+LL Drums Arrasta-Pé v2|https://we.tl/t-NoKPP4aXQ4|70
+LL Pacote Producao Arrasta-Pe (Acomp)|https://we.tl/t-FXIj0AOKfd|70
+LL Pacote Producao Arrasta-Pe (Completo)|https://we.tl/t-ATvLvobtIp|70
+LL Drums Forrozin Os Feras|https://we.tl/t-h90VRID5oq|70
+LL Drums Flavio Pizada Quente|https://we.tl/t-6On11FD1eh|70
+LL Drums Thales Play|https://we.tl/t-62ubOmLvYN|70
+LL Violao Pop v3|https://we.tl/t-3z8qb81air|90
+LL Drums Safadao Vaquejada|https://we.tl/t-MDmiYIsrAh|70
+LL Drums Pablo|https://we.tl/t-BgtpHY5DGF|70
+LL Drums Claudio Ney e Juliana|https://we.tl/t-TsqiiBAtJc|70
+LL Pacote Produção Claudio Ney e Juliana|https://we.tl/t-gBmwFO0DvT|70
+LL Acordeon Forro|https://we.tl/t-V43HGqOltJ|70
+LL Piano Romântico|https://we.tl/t-6XCHLMaDxg|70
+LL Drums Rey Vaqueiro|https://we.tl/t-X7czSaAMUC|70
+LL Drums Forró Boys|https://we.tl/t-33vFy84BCc|70
+LL Drums Luxúria|https://we.tl/t-sOKvmYTeba|70
+LL Pacote Produção Arrocha|https://we.tl/t-wZBxe3EY45|70
+LL Pacote Produção Guilherme Silva|https://we.tl/t-Tjxvc3Rd2F|70
+LL Guitarra Forró|https://we.tl/t-A4Ew2QUAJB|70`;
+
+const samplesData = rawData.split("\n").map(l => {
+  const [nome, link, valor] = l.split("|");
+  return { nome, link, valor: parseFloat(valor) };
+});
+
+let selectedSamples = new Set();
+const container = document.getElementById("samplesContainer");
+
+function renderSamples(filter="") {
+  container.innerHTML = "";
+  const filtered = samplesData.filter(s => s.nome.toLowerCase().includes(filter.toLowerCase()));
+  if (filtered.length === 0) {
+    container.innerHTML = "<p class='no-results'>Nenhum sample encontrado.</p>";
+    return;
+  }
+  filtered.forEach((s, i) => {
+    const globalIndex = samplesData.indexOf(s);
+    const div = document.createElement("div");
+    div.className = "sample-item";
+    const checked = selectedSamples.has(globalIndex) ? "checked" : "";
+    div.innerHTML = `
+      <input type="checkbox" value="${globalIndex}" ${checked}>
+      <label>${s.nome} - R$${s.valor}</label>`;
+    container.appendChild(div);
+  });
+}
+renderSamples();
+
+container.addEventListener("change", e => {
+  if (e.target.type === "checkbox") {
+    const id = parseInt(e.target.value);
+    e.target.checked ? selectedSamples.add(id) : selectedSamples.delete(id);
+  }
+});
+
+document.getElementById("sampleSearch").addEventListener("input", e => renderSamples(e.target.value));
+
+document.getElementById("toggleSelect").addEventListener("click", () => {
+  const allSelected = selectedSamples.size === samplesData.length;
+  selectedSamples = allSelected ? new Set() : new Set(samplesData.map((_, i) => i));
+  renderSamples(document.getElementById("sampleSearch").value);
+  document.getElementById("toggleSelect").textContent = allSelected ? "Selecionar Todos" : "Limpar Seleção";
+});
+
+function gerarMensagem() {
+  const cliente = document.getElementById("cliente").value.trim();
+  const contato = document.getElementById("contato").value.trim();
+  const perc = parseFloat(document.getElementById("descontoPerc").value) || 0;
+  const val = parseFloat(document.getElementById("descontoVal").value) || 0;
+  const msgAdd = document.getElementById("mensagem").value.trim();
+  const logoSrc = document.getElementById("logoPreview").src;
+  const qtdSamples = selectedSamples.size;
+
+  if (qtdSamples === 0) { alert("Selecione ao menos um sample."); return; }
+
+  let total = 0, listaHTML = "", msg = "🎹 LL SAMPLES 🎹\n";
+  msg += "\n🔗Links adquiridos:\n";
+
+selectedSamples.forEach(i => {
+  const s = samplesData[i];
+  // Mostra só o nome do sample (sem link) na parte de cima
+  listaHTML += `<div>• ${s.nome}</div>`;
+  // Link clicável apenas na parte de baixo (mensagem final)
+  msg += `• ${s.nome}\n<a href="${s.link}" target="_blank">${s.link}</a>\n`;
+  total += s.valor;
+});
+
+
+ // Calcula descontos normalmente
+const descPerc = total * (perc / 100);
+const descTotal = descPerc + val;
+const final = total - descTotal;
+
+// ⛔️ REMOVIDO: As linhas que mostravam “Valor Total”, “Desconto” e “Total com desconto”
+// Elas geravam o trecho duplicado no final da mensagem
+
+// Adiciona observações extras, se houver
+if (msgAdd)
+  msg += `\n\n${msgAdd}`;
+
+// Mensagem final padrão da LL Samples
+msg += `
+⚡ LL SAMPLES ⚡
+🎹 Obrigado pela compra!!!
+👊🏻 Marca lá → @llsamples_
+\n⤵️ Acesse nosso grupo para promoções exclusivas e brindes!!! 
+<a href="https://chat.whatsapp.com/KSSYxQZRanb5OyhRqwgHs6" target="_blank">https://chat.whatsapp.com/KSSYxQZRanb5OyhRqwgHs6
+</a>
+`;
+
+
+  let descontoTexto = "";
+if (perc > 0 || val > 0) {
+  const valorPerc = perc > 0 ? total * (perc / 100) : 0; // 💡 quanto equivale a % em reais
+  const valorTotalDesc = valorPerc + val; // soma % + valor fixo
+  descontoTexto = `🔻Desconto: `;
+  if (perc > 0) descontoTexto += `${perc}% (${valorPerc.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}) `;
+  if (val > 0) descontoTexto += `- ${val.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}`;
+}
+
+const descontoHTML = descontoTexto
+  ? `<p class='desconto-texto'>${descontoTexto}</p>` 
+  : "";
+
+
+  const logoHTML = logoSrc ? `<div style="text-align:center;"><img src="${logoSrc}" alt="Logo" style="height:70px;margin-bottom:10px;"></div>` : "";
+
+  document.getElementById("previewArea").innerHTML = `
+    ${logoHTML}
+    <h2 style="text-align:center;color:#0078d7;margin:5px 0;">🎹 LL SAMPLES 🎹</h2>
+    <h3 style="text-align:center;margin-top:0;color:#333;">🌟 ORÇAMENTO ESPECIAL – ${qtdSamples} SAMPLE${qtdSamples>1?"S":""}</h3>
+    <hr style="border:1px solid #0078d7;">
+	
+    ${cliente?`<p><strong>👤Cliente:</strong> ${cliente}</p>`:""}
+    ${contato?`<p><strong>📲Contato:</strong> ${contato}</p>`:""}
+	<b>\n🗒️SAMPLES SELECIONADOS:\n\n</b>
+    ${listaHTML}
+  <p class="total">💰 Valor Bruto: R$${total.toFixed(2)}</p>
+  ${descontoHTML}
+  <p class="valor-final" style="color:#0078d7;">💳 Total Final (Cartão c/ acréscimo): <strong>R$${(final * 1.06).toFixed(2)}</strong></p>
+  <p class="valor-final">💵 Total Final (PIX): <strong>R$${final.toFixed(2)}</strong></p>
+
+
+    ${msgAdd?`<p><em>${msgAdd}</em></p>`:""}
+    <hr>
+    <pre id="mensagemPronta">${msg}</pre>`;
+}
+
+function copiarMensagem() {
+  const preview = document.getElementById("previewArea");
+  if (!preview) return alert("Gere o orçamento primeiro!");
+
+  // Clona toda a área de pré-visualização
+  const clone = preview.cloneNode(true);
+
+  // Pega o texto completo
+  let texto = clone.innerText;
+
+  // 🔹 Limpa e normaliza
+  texto = texto
+    .replace(/\r/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n\s*\n\s*\n+/g, '\n\n')
+    .trim();
+
+  // 🔹 Melhora formatação visual
+  texto = texto
+    .replace(/^🎹 LL SAMPLES 🎹\s*/m, '🎹 LL SAMPLES 🎹\n\n')
+    .replace(/🌟 ORÇAMENTO ESPECIAL/g, ' 🌟 ORÇAMENTO ESPECIAL')
+    .replace(/\n{2,}🗒️SAMPLES SELECIONADOS:/, '\n\n🗒️SAMPLES SELECIONADOS:')
+    .replace(/🗒️SAMPLES SELECIONADOS:\s*\n*/g, '🗒️SAMPLES SELECIONADOS:\n')
+    .replace(/•\s*/g, '\n• ') // força quebra de linha em cada item
+    .replace(/\n{3,}/g, '\n\n');
+
+  // 🔹 Adiciona uma linha antes do valor bruto
+  texto = texto.replace(/(• [^\n]+)\n( 💰 Valor Bruto)/, '$1\n\n$2');
+
+  // 🔹 PIX em itálico
+  texto = texto.replace(/(💵 Total Final \(PIX\): [^\n]+)/, '*$1*');
+
+  // 🔹 Compatibilidade WhatsApp (mantém espaçamento)
+  texto = texto
+    .replace(/\n\n/g, '\n\u200B\n')
+    .replace(/\n{3,}/g, '\n\u200B\n')
+    .trim();
+
+  navigator.clipboard.writeText(texto)
+    .then(() => alert("Mensagem completa copiada com formatação!"))
+    .catch(() => alert("Erro ao copiar."));
+}
+
+
+function limparCampos() {
+  document.getElementById("cliente").value = "";
+  document.getElementById("contato").value = "";
+  document.getElementById("mensagem").value = "";
+  document.getElementById("descontoPerc").value = "";
+  document.getElementById("descontoVal").value = "";
+  document.getElementById("logoPreview").style.display = "none";
+  document.getElementById("logoPreview").src = "";
+  selectedSamples.clear();
+  renderSamples();
+  document.getElementById("previewArea").innerHTML = '<p><i>Preencha os campos e clique em "Gerar".</i></p>';
+}
+
+// LOGO IMPORT
+document.getElementById('logoInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('logoPreview').src = ev.target.result;
+    document.getElementById('logoPreview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+});
+
+// PDF (A4)
+function salvarPDF() {
+  const elemento = document.getElementById('previewArea');
+  if (!elemento || elemento.innerText.includes("Preencha os campos")) {
+    alert("Gere o orçamento primeiro!");
+    return;
+  }
+  const opt = {
+    margin: 10,
+    filename: 'Orcamento_LL_Samples.pdf',
+    image: { type: 'jpeg', quality: 1 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(elemento).save();
+}
+function salvarPDFResumido() {
+  const preview = document.getElementById("previewArea");
+  if (!preview || preview.innerText.includes("Preencha os campos")) {
+    alert("Gere o orçamento primeiro!");
+    return;
+  }
+
+  // Cria um clone da prévia atual para manipular sem alterar a original
+  const clone = preview.cloneNode(true);
+
+  // Remove tudo que vem após o "Total Final" para gerar apenas a parte superior
+  const msgNode = clone.querySelector("#mensagemPronta");
+  if (msgNode) msgNode.remove(); // remove o texto longo com links
+
+  // Adiciona a mensagem promocional no final
+  const aviso = document.createElement("p");
+  aviso.textContent = "📌 Aproveite agora e garanta já o seu!";
+  aviso.style.textAlign = "center";
+  aviso.style.marginTop = "20px";
+  aviso.style.fontWeight = "600";
+  aviso.style.color = "#0078d7";
+  clone.appendChild(aviso);
+
+  // Configurações do PDF
+  const opt = {
+    margin: 10,
+    filename: 'Orcamento_Resumido_LL_Samples.pdf',
+    image: { type: 'jpeg', quality: 1 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  // Gera o PDF
+  html2pdf().set(opt).from(clone).save();
+}
+
+function copiarParteCima() {
+  const preview = document.getElementById("previewArea");
+  if (!preview) return alert("Gere o orçamento primeiro!");
+
+  // Clona a prévia atual
+  const clone = preview.cloneNode(true);
+
+  // Remove a parte de baixo (mensagem final)
+  const msgNode = clone.querySelector("#mensagemPronta");
+  if (msgNode) msgNode.remove();
+
+  // Pega o texto bruto
+  let texto = clone.innerText;
+
+  // 🔹 Limpa e normaliza
+  texto = texto
+    .replace(/\r/g, '')                 
+    .replace(/[ \t]+/g, ' ')            
+    .replace(/\n\s*\n\s*\n+/g, '\n\n')  
+    .trim();
+
+  // 🔹 Formata seções principais
+  texto = texto
+    .replace(/^🎹 LL SAMPLES 🎹\s*/m, '🎹 LL SAMPLES 🎹\n\n')
+    .replace(/🌟 ORÇAMENTO ESPECIAL/g, ' 🌟 ORÇAMENTO ESPECIAL')
+    .replace(/\n{2,}🗒️SAMPLES SELECIONADOS:/, '\n\n🗒️SAMPLES SELECIONADOS:')
+    .replace(/🗒️SAMPLES SELECIONADOS:\s*\n*/g, '🗒️SAMPLES SELECIONADOS:\n')
+    .replace(/•\s*/g, '\n• ') // força cada item pra linha nova
+    .replace(/\n{3,}/g, '\n\n');
+
+  // 🔹 Linha em branco antes do valor bruto
+  texto = texto.replace(/(• [^\n]+)\n( 💰 Valor Bruto)/, '$1\n\n$2');
+
+  // 🔹 Coloca o PIX em itálico (com asteriscos)
+  texto = texto.replace(/(💵 Total Final \(PIX\): [^\n]+)/, '*$1*');
+
+  // 🔹 Conversão para compatibilidade WhatsApp
+  texto = texto
+    .replace(/\n\n/g, '\n\u200B\n') // adiciona espaço invisível entre blocos
+    .replace(/\n{3,}/g, '\n\u200B\n') // evita colagem sem espaçamento
+    .trim();
+
+  navigator.clipboard.writeText(texto)
+    .then(() => alert("Parte de cima copiada com formatação WhatsApp!"))
+    .catch(() => alert("Erro ao copiar."));
+}
+
+
+
+
+function copiarParteBaixo() {
+  const msgNode = document.getElementById("mensagemPronta");
+  if (!msgNode) return alert("Gere o orçamento primeiro!");
+
+  const texto = msgNode.innerText.trim();
+  navigator.clipboard.writeText(texto)
+    .then(() => alert("Parte de baixo copiada!"))
+    .catch(() => alert("Erro ao copiar."));
+}
+
+
+</script>
+</body>
+</html>
